@@ -12,7 +12,7 @@
   3. **Transformer NER (`dslim/bert-base-NER`):** Deep bidirectional contextual attention model for resolving ambiguous names, organizations, and locations with graceful offline fallback.
 - **Combined Deduplication & Conflict Resolution:** Implements Microsoft Presidio recognizer hierarchy — validated structured tokens override generic NLP tags, removing duplicates and boosting F1 score to 93.18%.
 - **Right-to-Left Anonymizer:** Replaces sensitive spans using exact character offsets from right to left, assigning consistent placeholders (e.g. `[PERSON_1]`) to repeated identical entities.
-- **Deterministic Restorer:** Reconstructs the exact original text locally using the private on-device placeholder mapping.
+- **Local Anonymization Mapping:** Securely maps assigned placeholders to their original values locally without exposing raw text.
 - **Rigorous Academic Evaluation:** Evaluated on 48 synthetic annotated samples (83 ground-truth entities) with exact entity-level matching, measuring Precision, Recall, F1, F0.5, and inference latencies.
 
 ---
@@ -28,7 +28,7 @@ Privacy_lens/
 │   ├── ner_detector.py         # spaCy statistical NER detector
 │   ├── transformer_detector.py # Hugging Face Transformer NER detector
 │   ├── combined_detector.py    # Multi-engine consensus, conflict resolution & deduplication
-│   └── anonymizer.py           # Right-to-left anonymization & restoration
+│   └── anonymizer.py           # Right-to-left anonymization
 ├── backend/                    # Original backend directory (preserved)
 │   ├── app/                    # Core source modules
 │   ├── tests/                  # Test suite
@@ -76,7 +76,7 @@ Privacy_lens/
 ## Usage Commands
 
 ### 1. Run the Terminal Demo
-Demonstrates detection across Regex, spaCy, Transformer, Combined engine, anonymization, and reverse restoration on sample text:
+Demonstrates detection across Regex, spaCy, Transformer, Combined engine, and anonymization on sample text:
 ```bash
 python demo.py
 ```
@@ -92,7 +92,7 @@ python evaluation/evaluate.py
 ```
 
 ### 3. Run the Unit Test Suite
-Runs all 43 automated unit tests verifying regex patterns, validators, spaCy NER, Transformer NER, combined engine deduplication, and round-trip restoration:
+Runs all 43 automated unit tests verifying regex patterns, validators, spaCy NER, Transformer NER, combined engine deduplication, and anonymization:
 ```bash
 python -m pytest tests
 ```

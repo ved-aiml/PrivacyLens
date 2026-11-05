@@ -63,21 +63,3 @@ def anonymize_text(
         last_processed_start = start
 
     return sanitized, placeholder_to_value
-
-
-def restore_text(sanitized_text: str, mapping: dict[str, str]) -> str:
-    """Restore original sensitive text from sanitized text using the local mapping.
-
-    Safe and local: no external calls or sensitive data logging.
-    """
-    if not isinstance(sanitized_text, str):
-        raise TypeError("sanitized_text must be a string")
-    if not isinstance(mapping, dict):
-        raise TypeError("mapping must be a dictionary")
-
-    restored = sanitized_text
-    for placeholder, original_value in mapping.items():
-        restored = restored.replace(placeholder, original_value)
-
-    return restored
-

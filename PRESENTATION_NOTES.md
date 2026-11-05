@@ -13,7 +13,7 @@ With the widespread adoption of Large Language Models (LLMs) and cloud-based AI 
 Build a lightweight, explainable, and fully local Natural Language Processing (NLP) system called **PrivacyLens** that:
 1. Detects both structured and unstructured sensitive information in raw text.
 2. Anonymizes detected entities using consistent, entity-specific placeholders (e.g., `[PERSON_1]`, `[EMAIL_1]`).
-3. Preserves reverse-mapping locally so the original text can be restored without exposing sensitive data to external models or servers.
+3. Preserves a local anonymization mapping on-device so sensitive data is never exposed to downstream external models or servers.
 4. Operates 100% locally on CPU without relying on external APIs, cloud services, databases, or web servers.
 
 ---
@@ -190,8 +190,8 @@ In industrial privacy engineering (e.g. Microsoft Presidio, Hugging Face PII aud
 ### Q11: What is token aggregation in Transformer NER?
 **Answer:** BERT uses WordPiece subword tokenization (e.g., splitting "Rahul" into "Ra" and "##hul"). Token classification outputs predictions per subword. Aggregation groups contiguous subwords of the same entity class back into a single character-level text span matching the original input slice.
 
-### Q12: Is the restored text guaranteed to match the original text?
-**Answer:** Yes. Because placeholders are unique tokens (e.g., `[PERSON_1]`, `[EMAIL_1]`) and the mapping dictionary stores the exact original substring, `restore_text` performs a local deterministic search-and-replace that achieves a 100% round-trip match.
+### Q12: Why does anonymization replace text from right to left?
+**Answer:** When substituting spans with placeholders of differing lengths, replacing from left to right would shift all subsequent character positions and invalidate earlier calculated offsets. Processing spans in descending order of start offsets (right to left) guarantees that every earlier offset remains invariant.
 
 ### Q13: What is the computational complexity of the regex detector?
 **Answer:** For precompiled regular expressions matching a text of length $N$, deterministic finite automata (DFA) execution runs in $O(N)$ linear time per pattern. Across $K$ patterns, the overall complexity is $O(K \times N)$, which explains the sub-millisecond execution time.

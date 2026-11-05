@@ -31,44 +31,52 @@ def get_transformer_detector() -> TransformerDetector:
     return _transformer_detector
 
 
-def detect_all(text: str) -> list[dict[str, Any]]:
-    """Run Regex, spaCy, and Transformer (if available) detectors, combine their results,
+def detect_all(
+    text: str,
+    regex_matches: list[dict[str, Any]] | None = None,
+    spacy_matches: list[dict[str, Any]] | None = None,
+    tf_matches: list[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
+    """Run or receive Regex, spaCy, and Transformer detector results, combine them,
 
-    merge exact duplicates, and flag partial overlaps for review.
+    apply priority conflict resolution, merge exact duplicates, and flag partial overlaps.
+
+    Accepts pre-computed matches (e.g. from demo steps) to avoid duplicate model execution.
     """
     if not isinstance(text, str):
         raise TypeError("text must be a string")
 
-    # 1. Regex detection (High confidence structured tokens)
-    regex_matches: list[dict[str, Any]] = []
-    try:
-        regex_matches = detect_pii(text)
-    except Exception:
-        pass
+    # 1. Regex detection (run only if not provided)
+    if regex_matches is None:
+        try:
+            regex_matches = detect_pii(text)
+        except Exception:
+            regex_matches = []
 
-    # 2. spaCy NER detection
-    spacy_matches: list[dict[str, Any]] = []
-    try:
-        spacy_det = get_spacy_detector()
-        spacy_matches = spacy_det.detect_entities(text)
-    except Exception:
-        pass
+    # 2. spaCy NER detection (run only if not provided)
+    if spacy_matches is None:
+        try:
+            spacy_det = get_spacy_detector()
+            spacy_matches = spacy_det.detect_entities(text)
+        except Exception:
+            spacy_matches = []
 
-    # 3. Transformer NER detection (if available)
-    tf_matches: list[dict[str, Any]] = []
-    try:
-        tf_det = get_transformer_detector()
-        if tf_det.is_available:
-            tf_matches = tf_det.detect_entities(text)
-    except Exception:
-        pass
+    # 3. Transformer NER detection (run only if not provided)
+    if tf_matches is None:
+        try:
+            tf_det = get_transformer_detector()
+            if tf_det.is_available:
+                tf_matches = tf_det.detect_entities(text)
+            else:
+                tf_matches = []
+        except Exception:
+            tf_matches = []
 
     # Suppress generic statistical/NLP spans that collide with validated structured Regex tokens
     # (e.g. spaCy classifying a 10-digit phone number as DATE, or IFSC code as ORGANIZATION)
     filtered_spacy: list[dict[str, Any]] = []
     for s_det in spacy_matches:
         s_start, s_end = s_det["start"], s_det["end"]
-        # Check if overlaps with any structured regex match
         collides = False
         for r_det in regex_matches:
             if r_det["entity_type"] in STRUCTURED_PII_TYPES:

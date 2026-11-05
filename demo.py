@@ -17,10 +17,12 @@ sys.path.insert(0, str(ROOT_DIR / "backend"))
 sys.path.insert(0, str(ROOT_DIR))
 
 from app.detector import detect_pii
-from app.ner_detector import NERDetector
-from app.transformer_detector import TransformerDetector
-from app.combined_detector import detect_all
-from app.anonymizer import anonymize_text, restore_text
+from app.combined_detector import (
+    detect_all,
+    get_spacy_detector,
+    get_transformer_detector,
+)
+from app.anonymizer import anonymize_text
 
 
 DEFAULT_SAMPLE_TEXT = (
@@ -61,24 +63,30 @@ def run_demo(sample_text: str | None = None):
     regex_results = detect_pii(text)
     print(format_detections(regex_results))
 
-    # 2. spaCy NER
+    # 2. spaCy NER (reusing loaded singleton)
     print("\n[3] SPACY NER DETECTION (en_core_web_sm):")
-    spacy_engine = NERDetector()
+    spacy_engine = get_spacy_detector()
     spacy_results = spacy_engine.detect_entities(text)
     print(format_detections(spacy_results))
 
-    # 3. Transformer NER
+    # 3. Transformer NER (reusing loaded singleton)
     print("\n[4] TRANSFORMER NER DETECTION (dslim/bert-base-NER):")
-    tf_engine = TransformerDetector()
+    tf_engine = get_transformer_detector()
     if tf_engine.is_available:
         tf_results = tf_engine.detect_entities(text)
         print(format_detections(tf_results))
     else:
+        tf_results = []
         print("  [Transformer model not available - graceful fallback active]")
 
-    # 4. Combined
+    # 4. Combined (reuses already computed results - zero duplicate execution)
     print("\n[5] COMBINED DETECTOR (Deduplicated & Complementary):")
-    combined_results = detect_all(text)
+    combined_results = detect_all(
+        text,
+        regex_matches=regex_results,
+        spacy_matches=spacy_results,
+        tf_matches=tf_results,
+    )
     print(format_detections(combined_results))
 
     # 5. Anonymization
@@ -95,15 +103,6 @@ def run_demo(sample_text: str | None = None):
     else:
         print("  [No sensitive entities to map]")
 
-    # 6. Restoration
-    print("\n[8] RESTORED TEXT (Round-trip verification):")
-    print("-" * 80)
-    restored_text = restore_text(sanitized_text, mapping)
-    print(f'"{restored_text}"')
-    print("-" * 80)
-
-    is_exact = restored_text == text
-    print(f"\nVerification: Restored text matches original? {'YES (100% Exact Round-Trip)' if is_exact else 'NO'}")
     print("=" * 80 + "\n")
 
 

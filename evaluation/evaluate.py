@@ -1,22 +1,3 @@
-"""PrivacyLens Evaluation Benchmark Script.
-
-Evaluates four detection engines:
-1. Regex only
-2. spaCy NER only
-3. Transformer NER only (dslim/bert-base-NER)
-4. Combined detector
-
-Metrics calculated:
-- True Positives (TP), False Positives (FP), False Negatives (FN)
-- Precision: TP / (TP + FP)
-- Recall: TP / (TP + FN)
-- F1-score: 2 * P * R / (P + R)
-- F0.5-score: 1.25 * P * R / (0.25 * P + R)  [Weights Precision more heavily than Recall]
-- Processing latency: Total time, average time per sample, average time per 100 words
-- Model loading time (reported separately)
-- Per-entity breakdowns for PERSON, ORGANIZATION, LOCATION, EMAIL, PHONE, PAN, AADHAAR, etc.
-"""
-
 import json
 import os
 import sys
@@ -322,32 +303,6 @@ def run_benchmark():
             print(f"{ent:<20} | {'N/A':>9} | {'N/A':>9} | {'N/A':>9} | {'0':<5} | {'0':<5} | {'0':<5}")
 
     print("=" * 80)
-
-    # 6. Academic Analysis & Discussion
-    print("\n" + "=" * 80)
-    print("ACADEMIC INSIGHTS & METHODOLOGY EXPLANATION")
-    print("=" * 80)
-    print("""
-1. Structured Identifiers vs. Linguistic Entities:
-   - Regex excels on structured tokens (EMAIL, PHONE, PAN, AADHAAR, IFSC, IP, UPI)
-     because they adhere to strict deterministic syntaxes and checksums.
-   - spaCy and Transformer NER excel on unstructured named entities (PERSON,
-     ORGANIZATION, LOCATION) that require syntactic context and word embeddings.
-
-2. F0.5-Score Justification in Privacy Engineering:
-   - In privacy-preserving text anonymization, False Positives (over-redacting
-     ordinary words) degrade downstream readability and NLP utility.
-   - F0.5 weights Precision twice as heavily as Recall (beta = 0.5), prioritizing
-     accurate non-invasive redactions over aggressive over-anonymization.
-
-3. Combined Engine Behavior:
-   - The Combined Engine maximizes Recall by pooling complementary detectors.
-   - However, combining multiple independent models can also accumulate False
-     Positives from each sub-engine, making F0.5 and precision crucial monitors.
-""")
-    print("=" * 80)
-
-
 if __name__ == "__main__":
     run_benchmark()
 

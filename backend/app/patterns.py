@@ -43,8 +43,8 @@ PATTERNS = {
 
     # ---------------- AADHAAR ----------------
     "AADHAAR": re.compile(
-        r"(?<![A-Za-z0-9-])"
-        r"(?:\d{4}[\s-]?\d{4}[\s-]?\d{4})"
+        r"(?<![A-Za-z0-9+\-])"
+        r"(?:[2-9]\d{3}[\s-]?\d{4}[\s-]?\d{4})"
         r"(?![A-Za-z0-9-])"
     ),
 
@@ -140,13 +140,20 @@ PATTERNS = {
 
     # ---------------- PASSWORD (IN CONTEXT) ----------------
     "PASSWORD": re.compile(
-        r"(?i)\b(?:password|passwd|pwd)\s*[:=]\s*([^\s,;]+)"
+        r"(?i)\b(?:password|passwd|pwd)\s*(?:[:=]|\bis\b)\s*([^\s,;]+)"
     ),
 
     # ---------------- API KEY (IN CONTEXT OR TOKENS) ----------------
     "API_KEY": re.compile(
-        r"(?i)\b(?:api[_-]?key|secret[_-]?key|access[_-]?token)\s*[:=]\s*([A-Za-z0-9_\-]{16,})|"
-        r"\b(sk_live_[0-9a-zA-Z]{24,32})\b|"
-        r"\b(ghp_[0-9a-zA-Z]{36})\b"
+        r"(?i)\b(?:api[\s_-]?key|secret[\s_-]?key|access[\s_-]?token)\s*(?:[:=]|\bis\b)\s*([A-Za-z0-9_\-]{16,})|"
+        r"\b(AIza[0-9A-Za-z_\-]{33,37})\b|"
+        r"\b(sk-(?:proj-)?[a-zA-Z0-9_\-]{20,})\b|"
+        r"\b(sk-ant-[a-zA-Z0-9_\-]{40,})\b|"
+        r"\b(ghp_[0-9a-zA-Z]{36})\b|"
+        r"\b(hf_[a-zA-Z0-9]{34,})\b|"
+        r"\b(co-[a-zA-Z0-9]{40,})\b|"
+        r"\b(AKIA[0-9A-Z]{16})\b|"
+        r"\b([a-zA-Z0-9]{32}mistral[a-zA-Z0-9]{16})\b"
     ),
+
 }
