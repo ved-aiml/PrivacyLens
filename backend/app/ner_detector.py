@@ -47,12 +47,6 @@ class NERDetector:
             if entity_type == "DATE" and ent_text.replace(" ", "").replace("-", "").isdigit():
                 continue
 
-            # Generic non-sensitive time/duration phrases (e.g. "regular business hours", "Monday to Friday")
-            if entity_type in ("DATE", "TIME"):
-                lower = ent_text.lower()
-                if any(phrase in lower for phrase in ["business hours", "monday to friday", "autumn season"]):
-                    continue
-
             detections.append({
                 "entity_type": entity_type,
                 "text": ent.text,
